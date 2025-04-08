@@ -1,0 +1,8 @@
+com/skiconnect/config/TestConfig.class
+com/skiconnect/model/TeacherTest.class
+com/skiconnect/security/AuthControllerIntegrationTest.class
+com/skiconnect/model/PlaceTest.class
+com/skiconnect/BaseTest.class
+com/skiconnect/model/LessonAvailabilityTest.class
+com/skiconnect/model/SchoolTest.class
+com/skiconnect/model/UserTest.class
