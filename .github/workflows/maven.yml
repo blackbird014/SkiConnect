@@ -1,0 +1,75 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# Set permissions for the GITHUB_TOKEN
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    # Add concurrency to prevent parallel runs of the same workflow
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        # Fetch all history for all branches and tags
+        fetch-depth: 0
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: 'maven'
+    
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+    
+    - name: Build and Test
+      run: mvn -B verify
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: |
+          target/surefire-reports/
+          target/site/jacoco/
+          target/spotbugs.html
+    
+    - name: Check for secrets in code
+      uses: zricethezav/gitleaks-action@master
+      with:
+        path: '.'
+        configPath: '.gitleaks.toml'
+        verbose: true
+        redact: true
+        exit-code: 1
+        severity: HIGH
+    
+    # Optional: Uncomment and configure if you have a Snyk account
+    # - name: Check for vulnerable dependencies
+    #   uses: snyk/actions/java@v1.4.0
+    #   env:
+    #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+    #   with:
+    #     args: --severity-threshold=high 

@@ -1,0 +1,14 @@
+# These owners will be the default owners for everything in the repo
+* @blackbird014
+
+# Security-related files
+*.java @blackbird014
+.gitleaks.toml @blackbird014
+.github/workflows/maven.yml @blackbird014
+
+# Configuration files
+*.properties @config-team-member
+application*.properties @blackbird014
+
+# Documentation
+*.md @blackbird014 
