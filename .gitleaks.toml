@@ -1,5 +1,15 @@
 title = "SkiConnect Gitleaks Configuration"
 
+# Allowlist patterns to exclude certain files from scanning
+# These files often contain test credentials or development-specific configurations
+[[allowlist]]
+description = "Exclude development, test, and staging property files"
+paths = [
+    "src/main/resources/application-dev.properties",
+    "src/main/resources/application-test.properties",
+    "src/main/resources/application-staging.properties"
+]
+
 # Rule to detect generic API keys, tokens, and secrets
 # This pattern matches common variable names for API keys and their values
 # Example: api_key="1234567890abcdef" or token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
