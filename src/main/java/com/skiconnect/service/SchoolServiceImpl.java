@@ -1,7 +1,6 @@
 package com.skiconnect.service;
 
 import com.skiconnect.model.School;
-import com.skiconnect.model.Teacher;
 import com.skiconnect.model.User;
 import com.skiconnect.repository.SchoolRepository;
 import org.springframework.stereotype.Service;

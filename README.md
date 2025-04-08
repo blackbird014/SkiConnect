@@ -316,3 +316,98 @@ This project is licensed under the MIT License - see the LICENSE file for detail
    - Add more detailed API documentation
    - Include sequence diagrams for complex flows
    - Add deployment guide 
+
+## Environment Configuration
+
+The application supports multiple environments through different property files:
+
+### Development Environment (`application-dev.properties`)
+- Default environment (activated by `spring.profiles.active=dev`)
+- Uses H2 in-memory database
+- Debug logging enabled
+- H2 console enabled
+- SQL query logging enabled
+- JWT token expiration: 24 hours
+- Default JWT secret (not for production use)
+
+### Staging Environment (`application-staging.properties`)
+- Activated with `spring.profiles.active=staging`
+- JWT secret from environment variable with fallback
+- Info level logging
+- H2 console disabled
+- SQL query logging disabled
+- JWT token expiration: 1 hour
+
+### Production Environment (`application-prod.properties`)
+- Activated with `spring.profiles.active=prod`
+- JWT secret must be provided via environment variable
+- Warning level logging for security
+- H2 console disabled
+- SQL query logging disabled
+- DDL auto disabled for safety
+- JWT token expiration: 1 hour
+
+### Test Environment (`application-test.properties`)
+- Automatically activated during tests
+- Uses separate H2 test database
+- Debug logging enabled
+- H2 console enabled
+- SQL query logging enabled
+- Test-specific JWT configuration
+- Runs on port 8081 to avoid conflicts
+
+### Activating Different Environments
+
+1. Using command line:
+```bash
+java -jar your-app.jar --spring.profiles.active=prod
+```
+
+2. Using environment variable:
+```bash
+export SPRING_PROFILES_ACTIVE=prod
+```
+
+3. In `application.properties`:
+```properties
+spring.profiles.active=dev
+```
+
+### Production Deployment
+
+For production deployment:
+1. Set a strong JWT secret via environment variable:
+```bash
+export JWT_SECRET=your-secure-secret-key
+```
+2. Never commit the actual production JWT secret to version control
+3. Consider using a secrets management service
+4. Ensure all security features are properly configured
+5. Disable development features (H2 console, debug logging, etc.) 
+
+## Git Configuration
+
+The project includes a comprehensive `.gitignore` file that excludes:
+- Build output (`target/` directory)
+- IDE-specific files (IntelliJ IDEA, Eclipse, VS Code)
+- Log files
+- Environment variable files
+- OS-specific files
+
+### Removing target Directory from Git
+
+If you've accidentally committed the `target/` directory to Git, you can remove it with these commands:
+
+```bash
+# Remove target directory from Git tracking (but keep it locally)
+git rm -r --cached target/
+
+# Add and commit the changes
+git add .gitignore
+git commit -m "Remove target directory from Git tracking"
+
+# Push the changes to remove target from remote repository
+git push
+```
+
+After these steps, the `target/` directory will be ignored by Git, and you can safely delete it locally if needed. It will be recreated when you build the project. 

@@ -19,12 +19,10 @@ import java.util.stream.Collectors;
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
 
-    // TODO: Move to application.properties
-    @Value("${skiconnect.app.jwtSecret:DefaultSecretKeyForSkiConnectApplicationDoNotUseInProduction}")
+    @Value("${skiconnect.app.jwtSecret}")
     private String jwtSecretString;
 
-    // TODO: Move to application.properties
-    @Value("${skiconnect.app.jwtExpirationMs:86400000}") // 24 hours
+    @Value("${skiconnect.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
     private SecretKey jwtSecret;
