@@ -1,0 +1,558 @@
+openapi: 3.0.1
+info:
+  title: SkiConnect API
+  description: API for connecting ski teachers with students
+  contact:
+    name: SkiConnect Team
+    email: contact@skiconnect.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: '1.0'
+servers:
+- url: http://localhost:8080/api/v1
+  description: Generated server url
+security:
+- bearerAuth: []
+tags:
+- name: User
+  description: User management APIs
+- name: Place
+  description: Place management APIs
+- name: Lesson
+  description: Lesson management APIs
+- name: Search
+  description: Search APIs
+paths:
+  /api/v1/users:
+    post:
+      tags:
+      - User
+      summary: Create a new user
+      description: Create a new user with optional CV (admin only)
+      operationId: createUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      responses:
+        '201':
+          description: User created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '400':
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+  /api/v1/users/{userId}/roles:
+    post:
+      tags:
+      - User
+      summary: Assign a role to a user
+      description: Assign a role to a user (admin only)
+      operationId: assignRole
+      parameters:
+      - name: userId
+        in: path
+        description: User ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoleAssignmentRequest'
+        required: true
+      responses:
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRolesResponse'
+        '400':
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRolesResponse'
+        '200':
+          description: Role assigned
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRolesResponse'
+        '404':
+          description: User not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/UserRolesResponse'
+  /api/v1/places:
+    post:
+      tags:
+      - Place
+      summary: Create a new place
+      description: Create a new place (admin only)
+      operationId: createPlace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceRequest'
+        required: true
+      responses:
+        '201':
+          description: Place created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PlaceResponse'
+        '403':
+          description: Forbidden - Admin access required
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PlaceResponse'
+        '400':
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/PlaceResponse'
+  /api/v1/lessons:
+    get:
+      tags:
+      - Lesson
+      summary: List lessons
+      description: List lessons (filtered by role in future)
+      operationId: listLessons
+      parameters:
+      - name: schoolId
+        in: query
+        description: School ID
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: teacherId
+        in: query
+        description: Teacher ID
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: placeId
+        in: query
+        description: Place ID
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: status
+        in: query
+        description: Status (available, booked)
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: List of lessons
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonListResponse'
+    post:
+      tags:
+      - Lesson
+      summary: Create lesson availability
+      description: Create lesson availability (ski_school only)
+      operationId: createLesson
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LessonRequest'
+        required: true
+      responses:
+        '403':
+          description: Forbidden - Ski school access required
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '201':
+          description: Lesson created
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '400':
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+  /api/v1/lessons/{lessonId}/book:
+    post:
+      tags:
+      - Lesson
+      summary: Book a lesson
+      description: Book a lesson (student/student_group)
+      operationId: bookLesson
+      parameters:
+      - name: lessonId
+        in: path
+        description: Lesson ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookLessonRequest'
+        required: true
+      responses:
+        '404':
+          description: Lesson not found
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '403':
+          description: Forbidden - Student access required
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '400':
+          description: Invalid input
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+        '200':
+          description: Lesson booked
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/LessonResponse'
+  /api/auth/signup:
+    post:
+      tags:
+      - auth-controller
+      operationId: registerUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/auth/login:
+    post:
+      tags:
+      - auth-controller
+      operationId: authenticateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: object
+  /api/v1/search:
+    get:
+      tags:
+      - Search
+      summary: Search schools and teachers by place
+      description: Search schools and teachers by place
+      operationId: searchByPlace
+      parameters:
+      - name: placeId
+        in: query
+        description: Place ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: type
+        in: query
+        description: Type (schools, teachers)
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Search results with CVs
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+components:
+  schemas:
+    CVRequest:
+      type: object
+      properties:
+        experience:
+          type: string
+        qualifications:
+          type: string
+        bio:
+          type: string
+    UserRequest:
+      required:
+      - username
+      type: object
+      properties:
+        username:
+          maxLength: 20
+          minLength: 3
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+        cv:
+          $ref: '#/components/schemas/CVRequest'
+    CVResponse:
+      type: object
+      properties:
+        experience:
+          type: string
+        qualifications:
+          type: string
+        bio:
+          type: string
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        email:
+          type: string
+        cv:
+          $ref: '#/components/schemas/CVResponse'
+    RoleAssignmentRequest:
+      type: object
+      properties:
+        roleId:
+          type: string
+    RoleResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    UserRolesResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        roles:
+          uniqueItems: true
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleResponse'
+    PlaceRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+    PlaceResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        location:
+          type: string
+    LessonRequest:
+      type: object
+      properties:
+        schoolId:
+          type: integer
+          format: int64
+        teacherId:
+          type: integer
+          format: int64
+        placeId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+          format: int32
+    LessonResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        schoolId:
+          type: integer
+          format: int64
+        teacherId:
+          type: integer
+          format: int64
+        placeId:
+          type: integer
+          format: int64
+        studentId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date-time
+        status:
+          type: string
+        durationMinutes:
+          type: integer
+          format: int32
+    BookLessonRequest:
+      type: object
+      properties:
+        studentId:
+          type: integer
+          format: int64
+    SignupRequest:
+      required:
+      - email
+      - name
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          maxLength: 20
+          minLength: 3
+          type: string
+        name:
+          maxLength: 50
+          minLength: 0
+          type: string
+        email:
+          maxLength: 50
+          minLength: 0
+          type: string
+        role:
+          uniqueItems: true
+          type: array
+          items:
+            type: string
+        password:
+          maxLength: 40
+          minLength: 6
+          type: string
+    LoginRequest:
+      required:
+      - password
+      - username
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    SchoolResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        email:
+          type: string
+        availableLessons:
+          type: integer
+          format: int32
+    SearchResponse:
+      type: object
+      properties:
+        schools:
+          type: array
+          items:
+            $ref: '#/components/schemas/SchoolResponse'
+        teachers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TeacherResponse'
+        totalSchools:
+          type: integer
+          format: int32
+        totalTeachers:
+          type: integer
+          format: int32
+    TeacherResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        email:
+          type: string
+        schoolId:
+          type: integer
+          format: int64
+        availableLessons:
+          type: integer
+          format: int32
+    LessonListResponse:
+      type: object
+      properties:
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/LessonResponse'
+        total:
+          type: integer
+          format: int32
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

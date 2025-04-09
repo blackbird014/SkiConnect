@@ -1,6 +1,8 @@
 package com.skiconnect.security;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +30,26 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private UserService userDetailsService;
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthFilter.class);
+    
+    private static final List<String> PERMITTED_PATHS = Arrays.asList(
+        "/api/auth/",
+        "/swagger-ui/",
+        "/v3/api-docs/",
+        "/swagger-ui.html"
+    );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
         try {
+            String requestPath = request.getRequestURI();
+            
+            // Skip JWT validation for permitted paths
+            if (PERMITTED_PATHS.stream().anyMatch(path -> requestPath.startsWith(path))) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
